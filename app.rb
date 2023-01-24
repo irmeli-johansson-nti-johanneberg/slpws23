@@ -10,12 +10,11 @@ get('/') do
     slim(:start)
 end
 
-get('/group/') do
 
-   db = SQLite3::Database.new('db/slpws23.db')
-   db.results_as_hash = true
-   result = db.execute("SELECT * FROM group")
-
-    slim(:"group/index")
-    #slim(:"group/index", locals:{groups:result})
-end
+get('/groups/') do
+    db = SQLite3::Database.new("db/slpws23.db")
+    db.results_as_hash = true
+    result = db.execute("SELECT * FROM groups")
+    slim(:"groups/index", locals:{groups:result})
+  
+  end

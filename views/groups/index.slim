@@ -1,0 +1,7 @@
+h2 Alla grupper! 
+
+ul
+    - groups.each do |group|
+        li 
+            h3 #{group['GroupName']}
+            p #{group['GroupDescription']}
