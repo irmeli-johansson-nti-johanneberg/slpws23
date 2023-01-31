@@ -7,8 +7,23 @@ html lang="en"
         link rel="stylesheet" href="/css/style.css"/
         title Document
     body
-        nav 
-            a href="#"
+        header
+            nav#secondary_nav
+                ul
+                    li 
+                        a href="#" Logga in
+
+        nav#main_nav 
+            ul
+                li
+                    a href="/titles/" Avdelningar
+                li
+                    a href="/groups/" Grupper
+                li
+                    form action="#" method="get"
+                        input type="text" name="search" placeholder="Sök på taggar, grupper eller inlägg..."
+                        input type="submit" value="Sök"
+                    
 
 
         == yield
