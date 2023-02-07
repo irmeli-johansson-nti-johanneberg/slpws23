@@ -40,8 +40,18 @@ end
 get('/groups/:id') do
     id = params[:id].to_i
     db = connect_to_db
-    result = db.execute("SELECT * FROM groups WHERE GroupID = ?", id).first
-    slim(:"groups/show", locals:{groups:result})
+    result_group = db.execute("SELECT * FROM groups WHERE GroupID = ?", id).first
+    result_posts = db.execute("SELECT posts.PostID, posts.UserId, users.UserName, posts.PostName FROM posts INNER JOIN users ON posts.UserId = users.UserID WHERE posts.GroupId = ?", id)
+
+    slim(:"groups/show", locals:{groups:result_group, posts:result_posts})
 
 end
 
+
+get('/posts/:id') do
+    id = params[:id].to_i
+    db = connect_to_db
+    result_post = db.execute("SELECT posts.PostID, posts.UserId, users.UserName, posts.PostName, posts.PostContent FROM posts INNER JOIN users ON posts.UserId = users.UserID WHERE posts.GroupId = ?", id).first
+
+    slim(:"posts/show", locals:{post:result_post})
+end

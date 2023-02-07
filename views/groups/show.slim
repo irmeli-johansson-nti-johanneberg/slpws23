@@ -2,4 +2,23 @@ h2 #{groups['GroupName']}
 
 p #{groups['GroupDescription']}
 
+hr
+
+ul
+    - posts.each do |post|
+        li 
+            ul
+                li 
+                    h3 
+                        a href="/posts/#{post['PostID']}" #{post['PostName']}
+                li
+                    h4 
+                        a href="/users/#{post['UserId']}" #{post['UserName']}
+        / - comments.each do |comment|
+        /     li 
+        /         h4 #{comment['UserName']}
+        /     li 
+        /         p #{comment['CommentContent']}
+
+
 / ska också visa antal medlemmar, gruppägare, taggar, inlägg osv
