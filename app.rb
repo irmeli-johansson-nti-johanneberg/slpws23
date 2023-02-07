@@ -12,23 +12,23 @@ def connect_to_db
     return db
 end
 
-#ska visa samma som titles
+#ska visa samma som sections
 get('/') do
     slim(:start)
 end
 
-get('/titles/') do
+get('/sections/') do
     db = connect_to_db
-    result = db.execute("SELECT * FROM titles")
-    slim(:"titles/index", locals:{titles:result})
+    result = db.execute("SELECT * FROM sections")
+    slim(:"sections/index", locals:{sections:result})
 end
 
-get('/titles/:id') do
+get('/sections/:id') do
     id = params[:id].to_i
     db = connect_to_db
-    result_groups = db.execute("SELECT * FROM groups WHERE TitleId = ?", id)
-    result_title = db.execute("SELECT TitleName FROM titles WHERE TitleID = ?", id).first
-    slim(:"titles/show", locals:{groups:result_groups, title:result_title})
+    result_groups = db.execute("SELECT * FROM groups WHERE section_id = ?", id)
+    result_section = db.execute("SELECT section_name FROM sections WHERE section_id = ?", id).first
+    slim(:"sections/show", locals:{groups:result_groups, section:result_section})
 end
 
 get('/groups/') do
@@ -40,8 +40,10 @@ end
 get('/groups/:id') do
     id = params[:id].to_i
     db = connect_to_db
-    result_group = db.execute("SELECT * FROM groups WHERE GroupID = ?", id).first
-    result_posts = db.execute("SELECT posts.PostID, posts.UserId, users.UserName, posts.PostName FROM posts INNER JOIN users ON posts.UserId = users.UserID WHERE posts.GroupId = ?", id)
+    result_group = db.execute("SELECT * FROM groups WHERE group_id = ?", id).first
+    result_posts = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id)
+
+    puts result_posts
 
     slim(:"groups/show", locals:{groups:result_group, posts:result_posts})
 
@@ -51,7 +53,7 @@ end
 get('/posts/:id') do
     id = params[:id].to_i
     db = connect_to_db
-    result_post = db.execute("SELECT posts.PostID, posts.UserId, users.UserName, posts.PostName, posts.PostContent FROM posts INNER JOIN users ON posts.UserId = users.UserID WHERE posts.GroupId = ?", id).first
+    result_post = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id).first
 
     slim(:"posts/show", locals:{post:result_post})
 end

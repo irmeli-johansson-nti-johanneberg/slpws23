@@ -3,7 +3,7 @@ h2 Alla grupper!
 ul
     - groups.each do |group|
         li 
-            a href="/groups/#{group['GroupID']}" #{group['GroupName']}
+            a href="/groups/#{group['group_id']}" #{group['group_name']}
             / ska också visa: 
                             - antal medlemmar
                             - antal inlägg

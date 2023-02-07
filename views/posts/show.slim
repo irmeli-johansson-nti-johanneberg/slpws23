@@ -1,6 +1,6 @@
-h3 #{post['PostName']}
+h3 #{post['post_name']}
 
 h4 
-    a href="/users/#{post['UserId']}" #{post['UserName']}
+    a href="/users/#{post['owning_user_id']}" #{post['user_name']}
 
-p #{post['PostContent']}
+p #{post['post_content']}

@@ -1,0 +1,7 @@
+
+ul
+    - sections.each do |section|
+        li 
+            a href="/sections/#{section['section_id']}" #{section['section_name']}
+
+            / ska också visa hur många grupper som fins under rubriken
