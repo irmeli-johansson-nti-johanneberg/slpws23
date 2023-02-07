@@ -53,7 +53,8 @@ end
 get('/posts/:id') do
     id = params[:id].to_i
     db = connect_to_db
-    result_post = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id).first
+    result_post = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.post_id = ?", id).first
+    result_comments = db.execute("SELECT comments.comment_id, comments.owning_user_id, users.user_name, comments.comment_content FROM comments INNER JOIN users ON comments.owning_user_id = users.user_id WHERE comments.post_id = ?", id)
 
-    slim(:"posts/show", locals:{post:result_post})
+    slim(:"posts/show", locals:{post:result_post, comments:result_comments})
 end

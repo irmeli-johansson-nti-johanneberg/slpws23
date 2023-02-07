@@ -1,6 +1,16 @@
-h3 #{post['post_name']}
+ul
+    li
+        h3 #{post['post_name']}
+    li
+        h4 
+            a href="/users/#{post['owning_user_id']}" #{post['user_name']}
+    li
+        p #{post['post_content']}
 
-h4 
-    a href="/users/#{post['owning_user_id']}" #{post['user_name']}
-
-p #{post['post_content']}
+ul 
+    - comments.each do |comment|
+            li
+                h4 
+                    a href="/users/#{comment['owning_user_id']}" #{comment['user_name']}
+            li
+                p #{comment['comment_content']}
