@@ -3,6 +3,7 @@ require 'sinatra/reloader'
 require 'slim'
 require 'sqlite3'
 require 'bcrypt'
+require 'date'
 
 enable :sessions
 
@@ -43,7 +44,7 @@ get('/groups/:id') do
     result_group = db.execute("SELECT * FROM groups WHERE group_id = ?", id).first
     result_posts = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id)
 
-    puts result_posts
+    session[:current_group_id] = id
 
     slim(:"groups/show", locals:{groups:result_group, posts:result_posts})
 
@@ -58,3 +59,50 @@ get('/posts/:id') do
 
     slim(:"posts/show", locals:{post:result_post, comments:result_comments})
 end
+
+post("/posts") do
+    new_post_name = params[:new_post_name]
+    new_post_content = params[:new_post_content]
+    group_id = session[:current_group_id].to_i
+    user_id = session[:user_id].to_i
+
+    current_time = DateTime.now
+    new_post_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
+
+    db = SQLite3::Database.new("db/slpws23.db")
+    result = db.execute("INSERT INTO posts (group_id, owning_user_id, post_name, post_content, post_date) VALUES (?, ?, ?, ?, ?)", group_id, user_id, new_post_name, new_post_content, new_post_date)
+
+    redirect("/groups/#{group_id}")
+end
+
+get('/login/') do
+    slim(:"users/index")
+end
+
+post("/login") do
+    # username = params[:username]
+    # password = params[:password]
+    username = "test_user"
+
+    db = connect_to_db
+    result = db.execute("SELECT * FROM users WHERE user_name = ?", username).first
+    password_digest = result["password_digest"]
+    id = result["user_id"]
+
+    
+#   if BCrypt::Password.new(password_digest) == password
+#     session[:wrongpw] = false
+#     session[:id] = id
+#     session[:username] = username
+#     redirect('/todos/')
+#   else
+#     session[:wrongpw] = true
+#     redirect('/login/')
+#   end
+
+    session[:user_id] = id
+    session[:user_name] = username
+
+    redirect("/sections/")
+end
+
