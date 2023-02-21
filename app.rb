@@ -13,11 +13,6 @@ def connect_to_db
     return db
 end
 
-#ska visa samma som sections
-get('/') do
-    slim(:start)
-end
-
 get('/sections/') do
     db = connect_to_db
     result = db.execute("SELECT * FROM sections")
@@ -42,7 +37,7 @@ get('/groups/:id') do
     id = params[:id].to_i
     db = connect_to_db
     result_group = db.execute("SELECT * FROM groups WHERE group_id = ?", id).first
-    result_posts = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id)
+    result_posts = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id)
 
     session[:current_group_id] = id
 

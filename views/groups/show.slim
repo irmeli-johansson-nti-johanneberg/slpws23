@@ -14,9 +14,16 @@ ul
                 li 
                     h3 
                         a href="/posts/#{post['post_id']}" #{post['post_name']}
+                    - if session[:user_id] == post['owning_user_id']
+                        p
+                            a href="/posts/#{post['post_id']}/edit" Redigera
+                        form action="/posts/#{post['post_id']}/delete" method="post"
+                            input type="submit" value="Radera" 
                 li
                     h4 
                         a href="/users/#{post['owning_user_id']}" #{post['user_name']}
+                li 
+                    p #{post['post_content']}
         / - comments.each do |comment|
         /     li 
         /         h4 #{comment['owning_user_name']}
