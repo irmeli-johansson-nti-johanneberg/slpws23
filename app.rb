@@ -45,14 +45,13 @@ get('/groups/:id') do
 
 end
 
-
 get('/posts/:id') do
     id = params[:id].to_i
     db = connect_to_db
     result_post = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.post_id = ?", id).first
     result_comments = db.execute("SELECT comments.comment_id, comments.owning_user_id, users.user_name, comments.comment_content FROM comments INNER JOIN users ON comments.owning_user_id = users.user_id WHERE comments.post_id = ?", id)
-
-    slim(:"posts/show", locals:{post:result_post, comments:result_comments})
+    session[:current_post_id] = id
+    slim(:"posts/show", locals:{posts:result_post, comments:result_comments})
 end
 
 post("/posts") do
@@ -68,6 +67,37 @@ post("/posts") do
     result = db.execute("INSERT INTO posts (group_id, owning_user_id, post_name, post_content, post_date) VALUES (?, ?, ?, ?, ?)", group_id, user_id, new_post_name, new_post_content, new_post_date)
 
     redirect("/groups/#{group_id}")
+end
+
+post("/comments") do
+    new_comment_content = params[:new_comment_content]
+    post_id = session[:current_post_id].to_i
+    user_id = session[:user_id].to_i
+
+    current_time = DateTime.now
+    new_comment_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
+
+    db = SQLite3::Database.new("db/slpws23.db")
+    result = db.execute("INSERT INTO comments (post_id, owning_user_id, comment_content, comment_date) VALUES (?, ?, ?, ?)", post_id, user_id, new_comment_content, new_comment_date)
+
+    redirect("/posts/#{post_id}")
+end
+
+post("/posts/:id/delete") do
+    id = params[:id].to_i
+    group_id = session[:current_group_id].to_i
+    db = SQLite3::Database.new("db/slpws23.db")
+    result = db.execute("DELETE FROM posts LEFT JOIN comments ON posts.post_id = comments.post_id WHERE posts.post_id = ?", id) 
+    # Not working so continue here :D
+    redirect("/groups/#{group_id}")
+end
+
+post("/comments/:id/delete") do
+    id = params[:id].to_i
+    post_id = session[:current_post_id].to_i
+    db = SQLite3::Database.new("db/slpws23.db")
+    result = db.execute("DELETE FROM comments WHERE comment_id = ?", id)
+    redirect("/posts/#{post_id}")
 end
 
 get('/login/') do

@@ -4,8 +4,8 @@ p #{groups['group_description']}
 
 hr
 
-
 == slim :"posts/new"
+hr
 
 ul
     - posts.each do |post|
@@ -18,12 +18,13 @@ ul
                         p
                             a href="/posts/#{post['post_id']}/edit" Redigera
                         form action="/posts/#{post['post_id']}/delete" method="post"
-                            input type="submit" value="Radera" 
+                            input type="submit" value="Radera"
                 li
                     h4 
                         a href="/users/#{post['owning_user_id']}" #{post['user_name']}
                 li 
                     p #{post['post_content']}
+            hr
         / - comments.each do |comment|
         /     li 
         /         h4 #{comment['owning_user_name']}

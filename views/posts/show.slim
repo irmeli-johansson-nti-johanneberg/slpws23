@@ -1,16 +1,33 @@
 ul
     li
-        h3 #{post['post_name']}
-    li
+        h3 #{posts['post_name']}
+        - if session[:user_id] == posts['owning_user_id']
+            p
+                a href="/posts/#{posts['post_id']}/edit" Redigera
+            form action="/posts/#{posts['post_id']}/delete" method="post"
+                input type="submit" value="Radera"
+    li  
         h4 
-            a href="/users/#{post['owning_user_id']}" #{post['user_name']}
+            a href="/users/#{posts['owning_user_id']}" #{posts['user_name']}
     li
-        p #{post['post_content']}
+        p #{posts['post_content']}
+hr
+
+== slim :"comments/new"
+hr
 
 ul 
     - comments.each do |comment|
-            li
-                h4 
-                    a href="/users/#{comment['owning_user_id']}" #{comment['user_name']}
-            li
-                p #{comment['comment_content']}
+        li
+            ul
+                li
+                    h4 
+                        a href="/users/#{comment['owning_user_id']}" #{comment['user_name']}
+                    - if session[:user_id] == comment['owning_user_id']
+                        p
+                            a href="/comments/#{comment['comment_id']}/edit" Redigera
+                        form action="/comments/#{comment['comment_id']}/delete" method="post"
+                            input type="submit" value="Radera"
+                li 
+                    p #{comment['comment_content']}
+            hr
