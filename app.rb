@@ -87,8 +87,8 @@ post("/posts/:id/delete") do
     id = params[:id].to_i
     group_id = session[:current_group_id].to_i
     db = SQLite3::Database.new("db/slpws23.db")
-    result = db.execute("DELETE FROM posts LEFT JOIN comments ON posts.post_id = comments.post_id WHERE posts.post_id = ?", id) 
-    # Not working so continue here :D
+    db.execute("DELETE FROM posts WHERE post_id = ?", id)
+    db.execute("DELETE FROM comments WHERE post_id = ?", id)
     redirect("/groups/#{group_id}")
 end
 
