@@ -1,0 +1,3 @@
+form action="/comments/#{comment['comment_id']}/update" method="post"
+    textarea name="edit_comment_content" rows="10" cols="50" #{comment['comment_content']}
+    input type="submit" value="Redigera"

@@ -1,9 +1,11 @@
 ul
     li
         h3 #{posts['post_name']}
+
         - if session[:user_id] == posts['owning_user_id']
             p
                 a href="/posts/#{posts['post_id']}/edit" Redigera
+        - if session[:user_id] == posts['owning_user_id'] || session[:user_id] == group['owning_user_id']
             form action="/posts/#{posts['post_id']}/delete" method="post"
                 input type="submit" value="Radera"
     li  
@@ -26,6 +28,7 @@ ul
                     - if session[:user_id] == comment['owning_user_id']
                         p
                             a href="/comments/#{comment['comment_id']}/edit" Redigera
+                    - if session[:user_id] == posts['owning_user_id'] || session[:user_id] == group['owning_user_id']
                         form action="/comments/#{comment['comment_id']}/delete" method="post"
                             input type="submit" value="Radera"
                 li 

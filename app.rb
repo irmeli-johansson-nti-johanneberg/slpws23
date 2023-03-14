@@ -45,15 +45,6 @@ get('/groups/:id') do
 
 end
 
-get('/posts/:id') do
-    id = params[:id].to_i
-    db = connect_to_db
-    result_post = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.post_id = ?", id).first
-    result_comments = db.execute("SELECT comments.comment_id, comments.owning_user_id, users.user_name, comments.comment_content FROM comments INNER JOIN users ON comments.owning_user_id = users.user_id WHERE comments.post_id = ?", id)
-    session[:current_post_id] = id
-    slim(:"posts/show", locals:{posts:result_post, comments:result_comments})
-end
-
 post("/posts") do
     new_post_name = params[:new_post_name]
     new_post_content = params[:new_post_content]
@@ -67,6 +58,39 @@ post("/posts") do
     db.execute("INSERT INTO posts (group_id, owning_user_id, post_name, post_content, post_date) VALUES (?, ?, ?, ?, ?)", group_id, user_id, new_post_name, new_post_content, new_post_date)
 
     redirect("/groups/#{group_id}")
+end
+
+get('/posts/:id') do
+    id = params[:id].to_i
+    db = connect_to_db
+    result_post = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.post_id = ?", id).first
+    result_comments = db.execute("SELECT comments.comment_id, comments.owning_user_id, users.user_name, comments.comment_content FROM comments INNER JOIN users ON comments.owning_user_id = users.user_id WHERE comments.post_id = ?", id)
+    session[:current_post_id] = id
+    slim(:"posts/show", locals:{posts:result_post, comments:result_comments})
+end
+
+get("/posts/:id/edit") do
+    id = params[:id].to_i
+    db = connect_to_db
+    result = db.execute("SELECT * FROM posts WHERE post_id = ?", id).first
+    slim(:"posts/edit", locals:{post:result})
+end
+
+post("/posts/:id/update") do
+    post_id = params[:id].to_i
+    user_id = session[:user_id].to_i
+    edit_post_name = params["edit_post_name"]
+    edit_post_content = params["edit_post_content"]
+    db = SQLite3::Database.new("db/slpws23.db")
+    post_owner_id = db.execute("SELECT owning_user_id FROM posts WHERE post_id = ?", post_id).first.first
+    
+    if post_owner_id == user_id
+        db.execute("UPDATE posts SET (post_name, post_content) = (?,?) WHERE post_id = ?", edit_post_name, edit_post_content, post_id)
+        redirect("/posts/#{post_id}")
+    else
+        #Något felmeddelande
+        redirect("/posts/#{post_id}")
+    end
 end
 
 post("/comments") do
@@ -83,14 +107,36 @@ post("/comments") do
     redirect("/posts/#{post_id}")
 end
 
+get("/comments/:id/edit") do
+    id = params[:id].to_i
+    db = connect_to_db
+    result = db.execute("SELECT * FROM comments WHERE comment_id = ?", id).first
+    slim(:"comments/edit", locals:{comment:result})
+end
+
+post("/comments/:id/update") do
+    comment_id = params[:id].to_i
+    user_id = session[:user_id].to_i
+    edit_comment_content = params["edit_comment_content"]
+    db = SQLite3::Database.new("db/slpws23.db")
+    comment_owner_id, post_id = db.execute("SELECT owning_user_id, post_id FROM comments WHERE comment_id = ?", comment_id).first
+    
+    if comment_owner_id == user_id
+        db.execute("UPDATE comments SET comment_content = ? WHERE comment_id = ?", edit_comment_content, comment_id)
+        redirect("/posts/#{post_id}")
+    else
+        #Något felmeddelande
+        redirect("/posts/#{post_id}")
+    end
+end
+
 post("/posts/:id/delete") do
     id = params[:id].to_i
-    group_id = session[:current_group_id].to_i
     user_id = session[:user_id].to_i
 
     db = SQLite3::Database.new("db/slpws23.db")
-    post_owner_id = db.execute("SELECT owning_user_id FROM posts WHERE post_id = ?", id).first
-    group_owner_id = db.execute("SELECT owning_user_id FROM groups WHERE group_id = ?", group_id).first
+    group_id, post_owner_id = db.execute("SELECT group_id, owning_user_id FROM posts WHERE post_id = ?", id).first
+    group_owner_id = db.execute("SELECT owning_user_id FROM groups WHERE group_id = ?", group_id).first.first
 
     if post_owner_id == user_id || group_owner_id == user_id
         db.execute("DELETE FROM posts WHERE post_id = ?", id)
@@ -98,6 +144,7 @@ post("/posts/:id/delete") do
         redirect("/groups/#{group_id}")
     else
         #Något felmeddelande ska visas på sidan
+        redirect("/groups/#{group_id}")
     end
 end
 
