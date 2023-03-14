@@ -1,6 +1,6 @@
-h2 #{groups['group_name']}
+h2 #{group['group_name']}
 
-p #{groups['group_description']}
+p #{group['group_description']}
 
 hr
 
@@ -17,6 +17,7 @@ ul
                     - if session[:user_id] == post['owning_user_id']
                         p
                             a href="/posts/#{post['post_id']}/edit" Redigera
+                    - if session[:user_id] == post['owning_user_id'] || session[:user_id] == group['owning_user_id']
                         form action="/posts/#{post['post_id']}/delete" method="post"
                             input type="submit" value="Radera"
                 li

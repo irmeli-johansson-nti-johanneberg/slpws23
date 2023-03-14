@@ -41,7 +41,7 @@ get('/groups/:id') do
 
     session[:current_group_id] = id
 
-    slim(:"groups/show", locals:{groups:result_group, posts:result_posts})
+    slim(:"groups/show", locals:{group:result_group, posts:result_posts})
 
 end
 
@@ -64,7 +64,7 @@ post("/posts") do
     new_post_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
 
     db = SQLite3::Database.new("db/slpws23.db")
-    result = db.execute("INSERT INTO posts (group_id, owning_user_id, post_name, post_content, post_date) VALUES (?, ?, ?, ?, ?)", group_id, user_id, new_post_name, new_post_content, new_post_date)
+    db.execute("INSERT INTO posts (group_id, owning_user_id, post_name, post_content, post_date) VALUES (?, ?, ?, ?, ?)", group_id, user_id, new_post_name, new_post_content, new_post_date)
 
     redirect("/groups/#{group_id}")
 end
@@ -78,7 +78,7 @@ post("/comments") do
     new_comment_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
 
     db = SQLite3::Database.new("db/slpws23.db")
-    result = db.execute("INSERT INTO comments (post_id, owning_user_id, comment_content, comment_date) VALUES (?, ?, ?, ?)", post_id, user_id, new_comment_content, new_comment_date)
+    db.execute("INSERT INTO comments (post_id, owning_user_id, comment_content, comment_date) VALUES (?, ?, ?, ?)", post_id, user_id, new_comment_content, new_comment_date)
 
     redirect("/posts/#{post_id}")
 end
@@ -86,18 +86,29 @@ end
 post("/posts/:id/delete") do
     id = params[:id].to_i
     group_id = session[:current_group_id].to_i
+    user_id = session[:user_id].to_i
+
     db = SQLite3::Database.new("db/slpws23.db")
-    db.execute("DELETE FROM posts WHERE post_id = ?", id)
-    db.execute("DELETE FROM comments WHERE post_id = ?", id)
-    redirect("/groups/#{group_id}")
+    post_owner_id = db.execute("SELECT owning_user_id FROM posts WHERE post_id = ?", id).first
+    group_owner_id = db.execute("SELECT owning_user_id FROM groups WHERE group_id = ?", group_id).first
+
+    if post_owner_id == user_id || group_owner_id == user_id
+        db.execute("DELETE FROM posts WHERE post_id = ?", id)
+        db.execute("DELETE FROM comments WHERE post_id = ?", id)
+        redirect("/groups/#{group_id}")
+    else
+        #Något felmeddelande ska visas på sidan
+    end
 end
 
 post("/comments/:id/delete") do
     id = params[:id].to_i
     post_id = session[:current_post_id].to_i
     db = SQLite3::Database.new("db/slpws23.db")
-    result = db.execute("DELETE FROM comments WHERE comment_id = ?", id)
+    db.execute("DELETE FROM comments WHERE comment_id = ?", id)
     redirect("/posts/#{post_id}")
+
+    #lägg till validering rätt användare som deletar ( ska också kunna vara group admin)
 end
 
 get('/login/') do
