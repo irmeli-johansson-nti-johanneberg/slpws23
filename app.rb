@@ -162,30 +162,77 @@ get('/login/') do
     slim(:"users/index")
 end
 
-post("/login") do
-    # username = params[:username]
-    # password = params[:password]
-    username = "test_user"
+
+get('/register/') do
+    slim(:"users/new")
+end
+
+post('/register') do
+    session[:error_reg_unik] = false
+    session[:error_reg_password] = false
+
+    user_name = params[:user_name]
+    password = params[:password]
+    password_confirm = params[:password_confirm]
+
+    current_time = DateTime.now
+    new_user_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
+  
+    db = SQLite3::Database.new("db/slpws23.db")
+    result = db.execute("SELECT COUNT(user_name) FROM users WHERE user_name = ?", user_name).first.first
+
+    if result == 0
+        if password == password_confirm
+            # Använd flash istället!!!!!
+            session[:error_reg_unik] = false
+            session[:error_reg_password] = false
+            password_digest = BCrypt::Password.create(password)
+            db = SQLite3::Database.new("db/slpws23.db")
+            db.execute("INSERT INTO users (user_name, password_digest, user_date) VALUES (?,?,?)", user_name, password_digest, new_user_date)
+            redirect('/sections/')
+        else
+            #felhanterign
+            # Använd flash istället!!!!!
+            session[:error_reg_password] = true
+            redirect('/register/')
+        end
+    else
+        session[:error_reg_unik] = true
+        redirect('/register/')
+    end
+end
+
+post('/login') do
+    # session[:error_log_in] = false
+    user_name = params[:user_name]
+    password = params[:password]
+    # username = "test_user"
 
     db = connect_to_db
-    result = db.execute("SELECT * FROM users WHERE user_name = ?", username).first
-    password_digest = result["password_digest"]
-    id = result["user_id"]
+    result = db.execute("SELECT * FROM users WHERE user_name = ?", user_name).first
 
-    
-#   if BCrypt::Password.new(password_digest) == password
-#     session[:wrongpw] = false
-#     session[:id] = id
-#     session[:username] = username
-#     redirect('/todos/')
-#   else
-#     session[:wrongpw] = true
-#     redirect('/login/')
-#   end
+    if result != nil
+        if BCrypt::Password.new(result['password_digest']) == password
+            # Använd flash istället!!!!!
+            session[:error_log_in] = false
+            session[:user_id] = result['user_id']
+            session[:user_name] = user_name
+            redirect('/sections/')
+        else
+            # Använd flash istället!!!!!
+            session[:error_log_in] = true
+            redirect('/login/')
+        end
+    else
+        # Använd flash istället!!!!!
+        session[:error_log_in] = true
+        redirect('/login/')
+    end
 
-    session[:user_id] = id
-    session[:user_name] = username
 
-    redirect("/sections/")
+    # session[:user_id] = id
+    # session[:user_name] = username
+
+    # redirect("/sections/")
 end
 

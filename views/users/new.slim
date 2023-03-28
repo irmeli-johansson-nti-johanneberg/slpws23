@@ -1,0 +1,19 @@
+h2 Registrera ny användare
+
+form action="/register" method="post"
+    label for="register_name" Användarnamn:
+    input#register_name type="username" name="user_name" placeholder="Användarnamn"
+    label for="register_password" Lösenord:
+    input#register_password type="password" name="password" placeholder="Lösenord"
+    label for="register_confirm" Bekräfta lösenord:
+    input#register_confirm type="password" name="password_confirm" placeholder="Bekräfta lösenord"
+    input type="submit" value="Registrera"
+
+- if session[:error_reg_unik]
+    p Finns redan en användare med detta namn!
+
+- if session[:error_reg_password]
+    p Lösenorden matchar inte!
+
+p Redan registrerad?    
+a href="/login/" Logga in

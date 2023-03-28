@@ -1,6 +1,15 @@
-h2 Logga in :P
+h2 Logga in
 
 form action="/login" method="post"
-    / input type="text" name="username" placeholder="Enter username"
-    / input type="password" name="password" placeholder="Enter password"
+    label for="login_name" Användarnamn:
+    input#login_name type="username" name="user_name" placeholder="Användarnamn"
+    label for="login_password" Lösenord:
+    input#login_password type="password" name="password" placeholder="Lösenord"
     input type="submit" value="Logga in"
+
+    
+- if session[:error_log_in]
+    p Fel användarnamn eller lösenord!
+
+p Inte registrerad?
+a href="/register/" Registrera ny användare
