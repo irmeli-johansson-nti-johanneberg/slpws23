@@ -4,8 +4,9 @@ p #{group['group_description']}
 
 hr
 
-== slim :"posts/new"
-hr
+- if session[:user_id] != nil
+    == slim :"posts/new"
+    hr
 
 ul
     - posts.each do |post|

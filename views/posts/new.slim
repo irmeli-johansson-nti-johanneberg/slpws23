@@ -1,4 +1,5 @@
-form action="/posts" method="post"
-    input type="text" name="new_post_name" placeholder="Inläggets rubrik..."
-    textarea name="new_post_content" rows="10" cols="50"
-    input type="submit" value="Publicera"
+- if session[:user_id] != nil
+    form action="/posts" method="post"
+        input type="text" name="new_post_name" placeholder="Inläggets rubrik..."
+        textarea name="new_post_content" rows="10" cols="50"
+        input type="submit" value="Publicera"

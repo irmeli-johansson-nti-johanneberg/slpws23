@@ -1,3 +1,4 @@
-form action="/comments" method="post"
-    textarea name="new_comment_content" rows="10" cols="50"
-    input type="submit" value="Publicera"
+- if session[:user_id] != nil
+    form action="/comments" method="post"
+        textarea name="new_comment_content" rows="10" cols="50"
+        input type="submit" value="Publicera"

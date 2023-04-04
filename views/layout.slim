@@ -9,9 +9,15 @@ html lang="en"
     body
         header
             nav#secondary_nav
-                ul
-                    li 
-                        a href="/login/" Logga in
+                ul 
+                    - if session[:user_id] == nil
+                        li
+                            a href="/login/" Logga in
+                    - else
+                        li
+                            a href="/users/#{session[:user_id]}" Din profil
+                        li
+                            a href="/logout/" Logga ut
 
         nav#main_nav 
             ul

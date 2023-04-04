@@ -27,6 +27,14 @@ get('/sections/:id') do
     slim(:"sections/show", locals:{groups:result_groups, section:result_section})
 end
 
+post('/groups') do
+
+end
+
+get('/groups/new') do
+    
+end
+
 get('/groups/') do
     db = connect_to_db
     result = db.execute("SELECT * FROM groups")
@@ -51,22 +59,24 @@ post("/posts") do
     group_id = session[:current_group_id].to_i
     user_id = session[:user_id].to_i
 
-    current_time = DateTime.now
-    new_post_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
+    if user_id != 0
+        current_time = DateTime.now
+        new_post_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
 
-    db = SQLite3::Database.new("db/slpws23.db")
-    db.execute("INSERT INTO posts (group_id, owning_user_id, post_name, post_content, post_date) VALUES (?, ?, ?, ?, ?)", group_id, user_id, new_post_name, new_post_content, new_post_date)
-
+        db = SQLite3::Database.new("db/slpws23.db")
+        db.execute("INSERT INTO posts (group_id, owning_user_id, post_name, post_content, post_date) VALUES (?, ?, ?, ?, ?)", group_id, user_id, new_post_name, new_post_content, new_post_date)
+    end
     redirect("/groups/#{group_id}")
 end
 
 get('/posts/:id') do
     id = params[:id].to_i
     db = connect_to_db
-    result_post = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.post_id = ?", id).first
+    result_post = db.execute("SELECT posts.post_id, posts.owning_user_id, posts.group_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.post_id = ?", id).first
+    result_group = db.execute("SELECT owning_user_id FROM groups WHERE group_id = ?", result_post['group_id'].to_i).first
     result_comments = db.execute("SELECT comments.comment_id, comments.owning_user_id, users.user_name, comments.comment_content FROM comments INNER JOIN users ON comments.owning_user_id = users.user_id WHERE comments.post_id = ?", id)
     session[:current_post_id] = id
-    slim(:"posts/show", locals:{posts:result_post, comments:result_comments})
+    slim(:"posts/show", locals:{posts:result_post, comments:result_comments, group:result_group})
 end
 
 get("/posts/:id/edit") do
@@ -98,12 +108,13 @@ post("/comments") do
     post_id = session[:current_post_id].to_i
     user_id = session[:user_id].to_i
 
-    current_time = DateTime.now
-    new_comment_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
+    if user_id != 0
+        current_time = DateTime.now
+        new_comment_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
 
-    db = SQLite3::Database.new("db/slpws23.db")
-    db.execute("INSERT INTO comments (post_id, owning_user_id, comment_content, comment_date) VALUES (?, ?, ?, ?)", post_id, user_id, new_comment_content, new_comment_date)
-
+        db = SQLite3::Database.new("db/slpws23.db")
+        db.execute("INSERT INTO comments (post_id, owning_user_id, comment_content, comment_date) VALUES (?, ?, ?, ?)", post_id, user_id, new_comment_content, new_comment_date)
+    end
     redirect("/posts/#{post_id}")
 end
 
@@ -162,7 +173,6 @@ get('/login/') do
     slim(:"users/index")
 end
 
-
 get('/register/') do
     slim(:"users/new")
 end
@@ -203,10 +213,8 @@ post('/register') do
 end
 
 post('/login') do
-    # session[:error_log_in] = false
     user_name = params[:user_name]
     password = params[:password]
-    # username = "test_user"
 
     db = connect_to_db
     result = db.execute("SELECT * FROM users WHERE user_name = ?", user_name).first
@@ -228,11 +236,14 @@ post('/login') do
         session[:error_log_in] = true
         redirect('/login/')
     end
+end
 
+get("/logout/") do
+    slim(:"users/index")
+end
 
-    # session[:user_id] = id
-    # session[:user_name] = username
-
-    # redirect("/sections/")
+post("/logout") do
+    session.destroy
+    redirect('/sections/')
 end
 

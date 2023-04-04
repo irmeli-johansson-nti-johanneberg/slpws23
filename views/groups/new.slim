@@ -1,0 +1,23 @@
+form action="/groups" method="post"
+    label for="new_group_name" Gruppens namn:
+    input#new_group_name type="text" name="new_group_name" required="required"
+    
+    label for="new_group_description" Beskrivning:
+    textarea#new_group_description name="new_group_description" rows="10" cols="50"
+    
+    label for="new_group_tags" Taggar:
+    input#new_group_tags type="text" name="new_group_tags" placeholder="Exempel: Hästar, Ridning..."
+    
+    label for="new_group_section" Välj avdelning:
+    select#new_group_section name="new_group_section" required="required"
+        option value="" selected="selected" disabled="disabled" -Välj-
+        - sections.each do |section|
+                    option value="#{section['section_id']}" #{section['section_name']}
+
+    label for="new_group_mode" Publik eller privat:
+    select#new_group_mode name="new_group_mode" required="required"
+        option value="" selected="selected" disabled="disabled" -Välj-
+        option value="Public" Publik
+        option value="Private" Privat
+        
+    input type="submit" value="Skapa grupp"

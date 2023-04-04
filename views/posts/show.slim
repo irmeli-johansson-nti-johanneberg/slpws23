@@ -14,9 +14,9 @@ ul
     li
         p #{posts['post_content']}
 hr
-
-== slim :"comments/new"
-hr
+- if session[:user_id] != nil
+    == slim :"comments/new"
+    hr
 
 ul 
     - comments.each do |comment|
