@@ -1,7 +1,15 @@
 h2 #{group['group_name']}
 
+h4 gruppägarens namn
+    / a href="/users/#{post['owning_user_id']}" #{post['user_name']}
+
 p 
     pre #{group['group_description']}
+
+ul
+    - group_tags.each do |group_tag|
+        li
+            a href="/tags/#{group_tag['tag_id']}" #{group_tag['tag_name']}
 
 hr
 

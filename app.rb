@@ -30,7 +30,7 @@ end
 post('/groups') do
     new_group_name = params[:new_group_name]
     new_group_description = params[:new_group_description]
-    new_group_tags = params[:new_group_tags]
+    new_group_tags = params[:new_group_tags].split(", ")
     section_id = params[:new_group_section].to_i
     new_group_mode = params[:new_group_mode]
     user_id = session[:user_id].to_i
@@ -45,6 +45,15 @@ post('/groups') do
 
             db.execute("INSERT INTO groups (owning_user_id, group_name, group_description, section_id, group_date, group_mode) VALUES (?, ?, ?, ?, ?, ?)", user_id, new_group_name, new_group_description, section_id, new_group_date, new_group_mode)
             group_id = db.execute("SELECT group_id FROM groups WHERE group_name = ?", new_group_name).first.first.to_i
+
+            new_group_tags.each do |group_tag|
+                tag_exist = db.execute("SELECT COUNT(tag_name) FROM tags WHERE tag_name = ?", group_tag).first.first.to_i
+                if tag_exist == 0
+                    db.execute("INSERT INTO tags (tag_name) VALUES (?)", group_tag)
+                end
+                tag_id = db.execute("SELECT tag_id FROM tags WHERE tag_name = ?", group_tag).first.first.to_i
+                db.execute("INSERT INTO group_tag_rel (group_id, tag_id) VALUES (?,?)", group_id, tag_id)
+            end
             redirect("/groups/#{group_id}")
         else
             redirect("/groups/new")
@@ -73,7 +82,14 @@ get('/groups/:id') do
     db = connect_to_db
     result_group = db.execute("SELECT * FROM groups WHERE group_id = ?", id).first
     result_posts = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id)
+    
 
+
+    #DOES THIS WORK ??????????
+    result_group_tags = db.execute("SELECT group_tag_rel.tag_id tags.tag_name FROM group_tag_rel INNER JOIN tags ON group_tag_rel.tag_id = tags.tag_id WHERE group_tag_rel.group_id = ?", result_group['group_id'])
+
+
+    
     session[:current_group_id] = id
 
     slim(:"groups/show", locals:{group:result_group, posts:result_posts})
