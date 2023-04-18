@@ -28,11 +28,38 @@ get('/sections/:id') do
 end
 
 post('/groups') do
+    new_group_name = params[:new_group_name]
+    new_group_description = params[:new_group_description]
+    new_group_tags = params[:new_group_tags]
+    section_id = params[:new_group_section].to_i
+    new_group_mode = params[:new_group_mode]
+    user_id = session[:user_id].to_i
+
+    if user_id != 0
+        
+        db = SQLite3::Database.new("db/slpws23.db")
+        name_unique = db.execute("SELECT COUNT(group_name) FROM groups WHERE group_name = ?", new_group_name).first.first.to_i
+        if name_unique == 0
+            current_time = DateTime.now
+            new_group_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
+
+            db.execute("INSERT INTO groups (owning_user_id, group_name, group_description, section_id, group_date, group_mode) VALUES (?, ?, ?, ?, ?, ?)", user_id, new_group_name, new_group_description, section_id, new_group_date, new_group_mode)
+            group_id = db.execute("SELECT group_id FROM groups WHERE group_name = ?", new_group_name).first.first.to_i
+            redirect("/groups/#{group_id}")
+        else
+            redirect("/groups/new")
+            #Namn inte unikt, redan upptaget :(
+        end
+    else
+        redirect("/groups/new")
+    end
 
 end
 
 get('/groups/new') do
-    
+    db = connect_to_db
+    result = db.execute("SELECT * FROM sections")
+    slim(:"groups/new", locals:{sections:result})
 end
 
 get('/groups/') do

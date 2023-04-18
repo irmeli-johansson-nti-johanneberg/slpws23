@@ -1,6 +1,7 @@
 h2 #{group['group_name']}
 
-p #{group['group_description']}
+p 
+    pre #{group['group_description']}
 
 hr
 
@@ -19,7 +20,8 @@ ul
                     h4 
                         a href="/users/#{post['owning_user_id']}" #{post['user_name']}
                 li 
-                    p #{post['post_content']}
+                    p
+                        pre #{post['post_content']}
             hr
         / - comments.each do |comment|
         /     li 

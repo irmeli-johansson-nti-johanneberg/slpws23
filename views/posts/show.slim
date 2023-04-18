@@ -12,7 +12,8 @@ ul
         h4 
             a href="/users/#{posts['owning_user_id']}" #{posts['user_name']}
     li
-        p #{posts['post_content']}
+        p
+            pre #{posts['post_content']}
 hr
 - if session[:user_id] != nil
     == slim :"comments/new"
@@ -32,5 +33,6 @@ ul
                         form action="/comments/#{comment['comment_id']}/delete" method="post"
                             input type="submit" value="Radera"
                 li 
-                    p #{comment['comment_content']}
+                    p
+                        pre #{comment['comment_content']}
             hr
