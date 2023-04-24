@@ -41,7 +41,7 @@ post('/groups') do
         name_unique = db.execute("SELECT COUNT(group_name) FROM groups WHERE group_name = ?", new_group_name).first.first.to_i
         if name_unique == 0
             current_time = DateTime.now
-            new_group_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
+            new_group_date = current_time.strftime "%Y-%m-%d"
 
             db.execute("INSERT INTO groups (owning_user_id, group_name, group_description, section_id, group_date, group_mode) VALUES (?, ?, ?, ?, ?, ?)", user_id, new_group_name, new_group_description, section_id, new_group_date, new_group_mode)
             group_id = db.execute("SELECT group_id FROM groups WHERE group_name = ?", new_group_name).first.first.to_i
@@ -80,19 +80,13 @@ end
 get('/groups/:id') do
     id = params[:id].to_i
     db = connect_to_db
-    result_group = db.execute("SELECT * FROM groups WHERE group_id = ?", id).first
-    result_posts = db.execute("SELECT posts.post_id, posts.owning_user_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id)
-    
-
-
-    #DOES THIS WORK ??????????
-    result_group_tags = db.execute("SELECT group_tag_rel.tag_id tags.tag_name FROM group_tag_rel INNER JOIN tags ON group_tag_rel.tag_id = tags.tag_id WHERE group_tag_rel.group_id = ?", result_group['group_id'])
-
-
+    result_group = db.execute("SELECT groups.*, users.user_name FROM groups INNER JOIN users ON groups.owning_user_id = users.user_id WHERE groups.group_id = ?", id).first
+    result_posts = db.execute("SELECT posts.*, users.user_name FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id)
+    result_group_tags = db.execute("SELECT group_tag_rel.tag_id, tags.tag_name FROM group_tag_rel INNER JOIN tags ON group_tag_rel.tag_id = tags.tag_id WHERE group_tag_rel.group_id = ?", id)
     
     session[:current_group_id] = id
 
-    slim(:"groups/show", locals:{group:result_group, posts:result_posts})
+    slim(:"groups/show", locals:{group:result_group, posts:result_posts, group_tags:result_group_tags})
 
 end
 
@@ -104,7 +98,7 @@ post("/posts") do
 
     if user_id != 0
         current_time = DateTime.now
-        new_post_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
+        new_post_date = current_time.strftime "%Y-%m-%d %H:%M"
 
         db = SQLite3::Database.new("db/slpws23.db")
         db.execute("INSERT INTO posts (group_id, owning_user_id, post_name, post_content, post_date) VALUES (?, ?, ?, ?, ?)", group_id, user_id, new_post_name, new_post_content, new_post_date)
@@ -115,9 +109,9 @@ end
 get('/posts/:id') do
     id = params[:id].to_i
     db = connect_to_db
-    result_post = db.execute("SELECT posts.post_id, posts.owning_user_id, posts.group_id, users.user_name, posts.post_name, posts.post_content FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.post_id = ?", id).first
+    result_post = db.execute("SELECT posts.*, users.user_name FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.post_id = ?", id).first
     result_group = db.execute("SELECT owning_user_id FROM groups WHERE group_id = ?", result_post['group_id'].to_i).first
-    result_comments = db.execute("SELECT comments.comment_id, comments.owning_user_id, users.user_name, comments.comment_content FROM comments INNER JOIN users ON comments.owning_user_id = users.user_id WHERE comments.post_id = ?", id)
+    result_comments = db.execute("SELECT comments.*, users.user_name FROM comments INNER JOIN users ON comments.owning_user_id = users.user_id WHERE comments.post_id = ?", id)
     session[:current_post_id] = id
     slim(:"posts/show", locals:{posts:result_post, comments:result_comments, group:result_group})
 end
@@ -153,7 +147,7 @@ post("/comments") do
 
     if user_id != 0
         current_time = DateTime.now
-        new_comment_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
+        new_comment_date = current_time.strftime "%Y-%m-%d %H:%M"
 
         db = SQLite3::Database.new("db/slpws23.db")
         db.execute("INSERT INTO comments (post_id, owning_user_id, comment_content, comment_date) VALUES (?, ?, ?, ?)", post_id, user_id, new_comment_content, new_comment_date)
@@ -182,6 +176,17 @@ post("/comments/:id/update") do
         #Något felmeddelande
         redirect("/posts/#{post_id}")
     end
+end
+
+get("/users/:id") do
+    user_id = params[:id].to_i
+
+    db = connect_to_db
+    result_user = db.execute("SELECT * FROM users WHERE user_id = ?", user_id).first
+    result_posts = db.execute("SELECT * FROM posts WHERE owning_user_id = ?", user_id)
+    result_comments = db.execute("SELECT comments.*, posts.post_id, posts.post_name FROM comments INNER JOIN posts ON comments.post_id = posts.post_id WHERE comments.owning_user_id = ?", user_id)
+
+    slim(:"users/show", locals:{user:result_user, posts:result_posts, comments:result_comments})
 end
 
 post("/posts/:id/delete") do
@@ -229,7 +234,7 @@ post('/register') do
     password_confirm = params[:password_confirm]
 
     current_time = DateTime.now
-    new_user_date = current_time.strftime "%Y-%m-%d %H:%M:%S"
+    new_user_date = current_time.strftime "%Y-%m-%d"
   
     db = SQLite3::Database.new("db/slpws23.db")
     result = db.execute("SELECT COUNT(user_name) FROM users WHERE user_name = ?", user_name).first.first
@@ -242,6 +247,7 @@ post('/register') do
             password_digest = BCrypt::Password.create(password)
             db = SQLite3::Database.new("db/slpws23.db")
             db.execute("INSERT INTO users (user_name, password_digest, user_date) VALUES (?,?,?)", user_name, password_digest, new_user_date)
+            session[:user_id] = db.execute("SELECT user_id FROM users WHERE user_name = ?", user_name).first.first.to_i
             redirect('/sections/')
         else
             #felhanterign
@@ -267,7 +273,6 @@ post('/login') do
             # Använd flash istället!!!!!
             session[:error_log_in] = false
             session[:user_id] = result['user_id']
-            session[:user_name] = user_name
             redirect('/sections/')
         else
             # Använd flash istället!!!!!

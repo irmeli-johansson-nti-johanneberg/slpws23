@@ -1,7 +1,9 @@
 h2 #{group['group_name']}
 
-h4 gruppägarens namn
-    / a href="/users/#{post['owning_user_id']}" #{post['user_name']}
+h4
+    a href="/users/#{group['owning_user_id']}" #{group['user_name']}
+
+h4 Skapad: #{group['group_date']}
 
 p 
     pre #{group['group_description']}
@@ -24,6 +26,7 @@ ul
                 li 
                     h3 
                         a href="/posts/#{post['post_id']}" #{post['post_name']}
+                    p #{post['post_date']}
                 li
                     h4 
                         a href="/users/#{post['owning_user_id']}" #{post['user_name']}

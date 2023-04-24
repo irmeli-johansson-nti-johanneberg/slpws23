@@ -8,6 +8,7 @@ ul
         - if session[:user_id] == posts['owning_user_id'] || session[:user_id] == group['owning_user_id']
             form action="/posts/#{posts['post_id']}/delete" method="post"
                 input type="submit" value="Radera"
+        p #{posts['post_date']}
     li  
         h4 
             a href="/users/#{posts['owning_user_id']}" #{posts['user_name']}
@@ -32,6 +33,7 @@ ul
                     - if session[:user_id] == posts['owning_user_id'] || session[:user_id] == group['owning_user_id']
                         form action="/comments/#{comment['comment_id']}/delete" method="post"
                             input type="submit" value="Radera"
+                    p #{comment['comment_date']}
                 li 
                     p
                         pre #{comment['comment_content']}

@@ -1,0 +1,37 @@
+h2 #{user['user_name']}
+
+h4 Medlem sedan: #{user['user_date']}
+
+hr
+
+h3 Inlägg:
+ul
+    - posts.each do |post|
+        li 
+            ul
+                li 
+                    h3 
+                        a href="/posts/#{post['post_id']}" #{post['post_name']}
+                    p #{post['post_date']}
+                li
+                    h4 #{user['user_name']}
+                li 
+                    p
+                        pre #{post['post_content']}
+            hr
+h3 Kommentarer:
+ul
+    - comments.each do |comment|
+        li
+            ul
+                li 
+                    h4 #{user['user_name']} 
+                    p #{comment['comment_date']}
+                li 
+                    p
+                        pre #{comment['comment_content']}
+                li 
+                    p Gå till inlägget:
+                    p 
+                        a href="/posts/#{comment['post_id']}" #{comment['post_name']}
+            hr
