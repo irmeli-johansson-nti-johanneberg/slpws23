@@ -1,0 +1,7 @@
+== slim :("users/index", locals{user:user})
+
+h3 Grupper du äger: 
+- groups_owner.each do |group_owner|
+    h4 
+        a href="/groups/#{group_owner['group_id']}" #{group_owner['group_name']}
+    

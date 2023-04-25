@@ -15,7 +15,27 @@
     p Inte registrerad?
     a href="/register/" Registrera ny användare
 - else 
-    h2 Logga ut?
+    h2 #{user['user_name']}
 
-    form action="/logout" method="post"
-        input type="submit" value="Logga ut"
+    h4 Medlem sedan: #{user['user_date']}
+
+    hr
+
+    ul 
+        li 
+            form action="/users/#{user['user_id']}/groups" method="get"
+                input type="submit" value="Dina grupper"
+        li 
+            form action="/users/:id/posts" method="get"
+                input type="submit" value="Dina inlägg"
+        li 
+            form action="/users/:id/comments" method="get"
+                input type="submit" value="Dina kommentarer"
+        li 
+            form action="/users/:id/edit" method="get"
+                input type="submit" value="Redigera profil"
+        li 
+            form action="/logout" method="post"
+                input type="submit" value="Logga ut"
+    hr
+    

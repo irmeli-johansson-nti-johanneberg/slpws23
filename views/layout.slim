@@ -15,21 +15,20 @@ html lang="en"
                             a href="/login/" Logga in
                     - else
                         li
-                            a href="/users/#{session[:user_id]}" Din profil
-                        li
-                            a href="/logout/" Logga ut
+                            a href="/users/#{session[:user_id]}/profile" Din profil
+                        
 
-        nav#main_nav 
-            ul
-                li
-                    a href="/sections/" Avdelningar
-                li
-                    a href="/groups/" Grupper
-                li
-                    form action="#" method="get"
-                        input type="text" name="search" placeholder="Sök på taggar, grupper eller inlägg..."
-                        input type="submit" value="Sök"
-        hr                    
+            nav#main_nav 
+                ul
+                    li
+                        a href="/sections/" Avdelningar
+                    li
+                        a href="/groups/" Grupper
+                    li
+                        form action="#" method="get"
+                            input type="text" name="search" placeholder="Sök på taggar, grupper eller inlägg..."
+                            input type="submit" value="Sök"
+            hr                    
 
 
         == yield

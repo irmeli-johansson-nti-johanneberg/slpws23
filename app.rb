@@ -178,11 +178,38 @@ post("/comments/:id/update") do
     end
 end
 
+get("/users/:id/profile") do
+    id = params[:id].to_i
+    session_id = session[:user_id].to_i
+
+    if id == session_id
+        db = connect_to_db
+        result = db.execute("SELECT user_id, user_name, user_date FROM users WHERE user_id = ?", id).first
+        slim(:"users/index", locals:{user:result})
+    else
+        redirect("/users/#{id}")
+    end
+end
+
+get("/users/:id/groups") do
+    id = params[:id].to_i
+    session_id = session[:user_id].to_i
+
+    if id == session_id
+        db = connect_to_db
+        result_user = db.execute("SELECT user_id, user_name, user_date FROM users WHERE user_id = ?", id).first
+        result_groups_owner = db.execute("SELECT * FROM groups WHERE owning_user_id = ?", id)
+        slim(:"users/profile/groups", locals:{groups_owner:result_groups_owner, user:result_user})
+    else
+        redirect("/users/#{id}")
+    end
+end
+
 get("/users/:id") do
     user_id = params[:id].to_i
 
     db = connect_to_db
-    result_user = db.execute("SELECT * FROM users WHERE user_id = ?", user_id).first
+    result_user = db.execute("SELECT user_id, user_name, user_date FROM users WHERE user_id = ?", user_id).first
     result_posts = db.execute("SELECT * FROM posts WHERE owning_user_id = ?", user_id)
     result_comments = db.execute("SELECT comments.*, posts.post_id, posts.post_name FROM comments INNER JOIN posts ON comments.post_id = posts.post_id WHERE comments.owning_user_id = ?", user_id)
 
@@ -284,10 +311,6 @@ post('/login') do
         session[:error_log_in] = true
         redirect('/login/')
     end
-end
-
-get("/logout/") do
-    slim(:"users/index")
 end
 
 post("/logout") do
