@@ -1,7 +1,41 @@
-== slim :("users/index", locals{user:user})
+== slim :"users/index", locals:{user:user}
+
 
 h3 Grupper du äger: 
+p 
+    a href="/groups/new" Skapa en ny grupp 
+hr
 - groups_owner.each do |group_owner|
     h4 
         a href="/groups/#{group_owner['group_id']}" #{group_owner['group_name']}
     
+    p Skapad: #{group_owner['group_date']}
+
+    p Medlemmar:
+
+    p Gruppen är #{group_owner['group_mode']}
+
+    p
+        a href="/groups/#{group_owner['group_id']}/edit" Redigera
+
+    hr
+
+h3 Grupper du är medlemm i: 
+hr
+- groups.each do |group|
+    h4 
+        a href="/groups/#{group['group_id']}" #{group['group_name']}
+    
+    p Skapad: #{group['group_date']}
+
+    p Medlemmar:
+
+    p Gruppen är #{group['group_mode']}
+
+    form action="/groups/#{group['group_id']}/leave" method="post"
+        input type="submit" value="Lämna grupp"
+
+    hr
+
+
+

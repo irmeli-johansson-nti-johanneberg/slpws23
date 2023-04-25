@@ -23,17 +23,13 @@
 
     ul 
         li 
-            form action="/users/#{user['user_id']}/groups" method="get"
-                input type="submit" value="Dina grupper"
+            a href="/users/#{user['user_id']}/groups" Dina grupper
         li 
-            form action="/users/:id/posts" method="get"
-                input type="submit" value="Dina inlägg"
+            a href="/users/#{user['user_id']}/posts" Dina inlägg
         li 
-            form action="/users/:id/comments" method="get"
-                input type="submit" value="Dina kommentarer"
+            a href="/users/#{user['user_id']}/comments" Dina kommentarer
         li 
-            form action="/users/:id/edit" method="get"
-                input type="submit" value="Redigera profil"
+            a href="/users/#{user['user_id']}/edit" Redigera profil
         li 
             form action="/logout" method="post"
                 input type="submit" value="Logga ut"

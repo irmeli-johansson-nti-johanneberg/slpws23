@@ -13,11 +13,16 @@ ul
         li
             a href="/tags/#{group_tag['tag_id']}" #{group_tag['tag_name']}
 
+- if member['member'] == nil
+    form action="/groups/#{group['group_id']}/join" method="post"
+        input type="submit" value="Gå med" 
+
 hr
 
-- if session[:user_id] != nil
-    == slim :"posts/new"
-    hr
+- if session[:user_id] != nil 
+    - if group['group_mode'] == "PUBLIK" or group['group_mode'] == "PRIVAT" && member['member'] == true
+        == slim :"posts/new"
+        hr
 
 ul
     - posts.each do |post|

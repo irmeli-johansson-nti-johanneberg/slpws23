@@ -46,6 +46,8 @@ post('/groups') do
             db.execute("INSERT INTO groups (owning_user_id, group_name, group_description, section_id, group_date, group_mode) VALUES (?, ?, ?, ?, ?, ?)", user_id, new_group_name, new_group_description, section_id, new_group_date, new_group_mode)
             group_id = db.execute("SELECT group_id FROM groups WHERE group_name = ?", new_group_name).first.first.to_i
 
+            db.execute("INSERT INTO group_user_rel (group_id, user_id, member) VALUES (?, ?, ?)", group_id, user_id, true)
+
             new_group_tags.each do |group_tag|
                 tag_exist = db.execute("SELECT COUNT(tag_name) FROM tags WHERE tag_name = ?", group_tag).first.first.to_i
                 if tag_exist == 0
@@ -79,15 +81,25 @@ end
 
 get('/groups/:id') do
     id = params[:id].to_i
+    user_id = session[:user_id]
     db = connect_to_db
     result_group = db.execute("SELECT groups.*, users.user_name FROM groups INNER JOIN users ON groups.owning_user_id = users.user_id WHERE groups.group_id = ?", id).first
     result_posts = db.execute("SELECT posts.*, users.user_name FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id)
     result_group_tags = db.execute("SELECT group_tag_rel.tag_id, tags.tag_name FROM group_tag_rel INNER JOIN tags ON group_tag_rel.tag_id = tags.tag_id WHERE group_tag_rel.group_id = ?", id)
-    
+    result_member = db.execute("SELECT member FROM group_user_rel WHERE group_id = ? AND user_id = ?", id, user_id).first
+    if result_member == nil
+        result_member = {"member"=>nil}
+    end
+    puts "Hej"
+    puts "Hej"
+    puts "Hej"
+    p result_member
+    puts "Hej"
+    puts "Hej"
+    puts "Hej"
     session[:current_group_id] = id
 
-    slim(:"groups/show", locals:{group:result_group, posts:result_posts, group_tags:result_group_tags})
-
+    slim(:"groups/show", locals:{group:result_group, posts:result_posts, group_tags:result_group_tags, member:result_member})
 end
 
 post("/posts") do
@@ -203,6 +215,25 @@ get("/users/:id/groups") do
     else
         redirect("/users/#{id}")
     end
+end
+
+post("/groups/:id/join") do
+    group_id = params[:id].to_i
+    user_id = session[:user_id]
+
+    db = SQLite3::Database.new("db/slpws23.db")
+    group_mode = db.execute("SELECT group_mode FROM groups WHERE group_id =?", group_id).first.first
+
+    if group_mode == "PRIVAT"
+        member = nil
+    else
+        member = true
+    end
+
+    db.execute("INSERT INTO group_user_rel (group_id, user_id, member) VALUES (?, ?, ?)", group_id, user_id, member)
+    
+    redirect("groups/#{group_id}")
+
 end
 
 get("/users/:id") do
