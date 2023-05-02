@@ -13,37 +13,34 @@ ul
         li
             a href="/tags/#{group_tag['tag_id']}" #{group_tag['tag_name']}
 
-- if member['member'] == nil
+- if member['member'] == nil && session[:user_id] != nil
     form action="/groups/#{group['group_id']}/join" method="post"
         input type="submit" value="Gå med" 
 
 hr
 
 - if session[:user_id] != nil 
-    - if group['group_mode'] == "PUBLIK" or group['group_mode'] == "PRIVAT" && member['member'] == true
+    - if group['group_mode'] == "PUBLIK" or group['group_mode'] == "PRIVAT" && member['member'] == 1
         == slim :"posts/new"
         hr
-
-ul
-    - posts.each do |post|
-        li 
-            ul
-                li 
-                    h3 
-                        a href="/posts/#{post['post_id']}" #{post['post_name']}
-                    p #{post['post_date']}
-                li
-                    h4 
-                        a href="/users/#{post['owning_user_id']}" #{post['user_name']}
-                li 
-                    p
-                        pre #{post['post_content']}
-            hr
-        / - comments.each do |comment|
-        /     li 
-        /         h4 #{comment['owning_user_name']}
-        /     li 
-        /         p #{comment['comment_content']}
+- if group['group_mode'] == "PUBLIK" or group['group_mode'] == "PRIVAT" && member['member'] == 1
+    ul
+        - posts.reverse.each do |post|
+            li 
+                ul
+                    li 
+                        h3 
+                            a href="/posts/#{post['post_id']}" #{post['post_name']}
+                        p #{post['post_date']}
+                    li
+                        h4 
+                            a href="/users/#{post['owning_user_id']}" #{post['user_name']}
+                    li 
+                        p
+                            pre #{post['post_content']}
+                hr
+- else 
+    p Gruppen är privat! Gå med i gruppen för att kunna se och publicera inlägg.
 
 
 / ska också visa antal medlemmar, gruppägare, taggar, inlägg osv

@@ -11,7 +11,7 @@ hr
     
     p Skapad: #{group_owner['group_date']}
 
-    p Medlemmar:
+    p Medlemmar: #{group_owner['members_count']}
 
     p Gruppen är #{group_owner['group_mode']}
 
@@ -20,7 +20,7 @@ hr
 
     hr
 
-h3 Grupper du är medlemm i: 
+h3 Grupper du är medlem i: 
 hr
 - groups.each do |group|
     h4 
@@ -28,12 +28,16 @@ hr
     
     p Skapad: #{group['group_date']}
 
-    p Medlemmar:
+    p Medlemmar: #{group['members_count']}
 
     p Gruppen är #{group['group_mode']}
 
+    
     form action="/groups/#{group['group_id']}/leave" method="post"
-        input type="submit" value="Lämna grupp"
+        -if group['member'] == 1
+            input type="submit" value="Lämna grupp"
+        -if group['member'] == 0
+            input type="submit" value="Förfrågan skickad"
 
     hr
 

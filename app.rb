@@ -90,13 +90,7 @@ get('/groups/:id') do
     if result_member == nil
         result_member = {"member"=>nil}
     end
-    puts "Hej"
-    puts "Hej"
-    puts "Hej"
-    p result_member
-    puts "Hej"
-    puts "Hej"
-    puts "Hej"
+    
     session[:current_group_id] = id
 
     slim(:"groups/show", locals:{group:result_group, posts:result_posts, group_tags:result_group_tags, member:result_member})
@@ -210,8 +204,21 @@ get("/users/:id/groups") do
     if id == session_id
         db = connect_to_db
         result_user = db.execute("SELECT user_id, user_name, user_date FROM users WHERE user_id = ?", id).first
-        result_groups_owner = db.execute("SELECT * FROM groups WHERE owning_user_id = ?", id)
-        slim(:"users/profile/groups", locals:{groups_owner:result_groups_owner, user:result_user})
+
+        result_member_groups = db.execute("SELECT group_user_rel.member, groups.* FROM group_user_rel INNER JOIN groups ON group_user_rel.group_id = groups.group_id WHERE group_user_rel.user_id = ?", id)
+        result_groups_owner = []
+        result_groups = []
+        result_member_groups.each do |member_group|
+            members_count = db.execute("SELECT COUNT(member) AS members_count FROM group_user_rel WHERE group_id = ? AND member = 1", member_group['group_id']).first
+            member_group.merge!(members_count)
+            
+            if member_group['owning_user_id'] == id
+                result_groups_owner << member_group
+            else
+                result_groups << member_group
+            end
+        end
+        slim(:"users/profile/groups", locals:{groups_owner:result_groups_owner, groups:result_groups, user:result_user})
     else
         redirect("/users/#{id}")
     end
@@ -225,9 +232,9 @@ post("/groups/:id/join") do
     group_mode = db.execute("SELECT group_mode FROM groups WHERE group_id =?", group_id).first.first
 
     if group_mode == "PRIVAT"
-        member = nil
+        member = 0
     else
-        member = true
+        member = 1
     end
 
     db.execute("INSERT INTO group_user_rel (group_id, user_id, member) VALUES (?, ?, ?)", group_id, user_id, member)
