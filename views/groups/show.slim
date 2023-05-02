@@ -5,6 +5,8 @@ h4
 
 h4 Skapad: #{group['group_date']}
 
+h4 Medlemmar: #{group['members_count']}
+
 p 
     pre #{group['group_description']}
 
@@ -16,8 +18,19 @@ ul
 - if member['member'] == nil && session[:user_id] != nil
     form action="/groups/#{group['group_id']}/join" method="post"
         input type="submit" value="Gå med" 
-
 hr
+- if member_requests != []
+    - member_requests.each do |member_request|
+        p #{member_request['user_name']}
+        form action="/groups/#{group['group_id']}/member_request/#{member_request['user_id']}/update" method="post"
+            input type="submit" value="Acceptera förfrågan"
+        form action="/groups/#{group['group_id']}/member_request/#{member_request['user_id']}/delete" method="post"
+            input type="submit" value="Neka förfrågan"
+
+        hr
+
+
+
 
 - if session[:user_id] != nil 
     - if group['group_mode'] == "PUBLIK" or group['group_mode'] == "PRIVAT" && member['member'] == 1

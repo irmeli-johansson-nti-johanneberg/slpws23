@@ -84,16 +84,25 @@ get('/groups/:id') do
     user_id = session[:user_id]
     db = connect_to_db
     result_group = db.execute("SELECT groups.*, users.user_name FROM groups INNER JOIN users ON groups.owning_user_id = users.user_id WHERE groups.group_id = ?", id).first
+    members_count = db.execute("SELECT COUNT(member) AS members_count FROM group_user_rel WHERE group_id = ? AND member = 1", id).first
+    result_group.merge!(members_count)
+    if user_id == result_group['owning_user_id']
+        result_member_requests = db.execute("SELECT group_user_rel.user_id, users.user_name FROM group_user_rel INNER JOIN users ON group_user_rel.user_id = users.user_id WHERE group_user_rel.group_id = ? AND group_user_rel.member = 0", id)
+        p result_member_requests
+    else
+        result_member_requests = []
+    end
     result_posts = db.execute("SELECT posts.*, users.user_name FROM posts INNER JOIN users ON posts.owning_user_id = users.user_id WHERE posts.group_id = ?", id)
     result_group_tags = db.execute("SELECT group_tag_rel.tag_id, tags.tag_name FROM group_tag_rel INNER JOIN tags ON group_tag_rel.tag_id = tags.tag_id WHERE group_tag_rel.group_id = ?", id)
     result_member = db.execute("SELECT member FROM group_user_rel WHERE group_id = ? AND user_id = ?", id, user_id).first
+    p result_member
     if result_member == nil
         result_member = {"member"=>nil}
     end
     
     session[:current_group_id] = id
 
-    slim(:"groups/show", locals:{group:result_group, posts:result_posts, group_tags:result_group_tags, member:result_member})
+    slim(:"groups/show", locals:{group:result_group, member_requests:result_member_requests, posts:result_posts, group_tags:result_group_tags, member:result_member})
 end
 
 post("/posts") do
@@ -211,7 +220,7 @@ get("/users/:id/groups") do
         result_member_groups.each do |member_group|
             members_count = db.execute("SELECT COUNT(member) AS members_count FROM group_user_rel WHERE group_id = ? AND member = 1", member_group['group_id']).first
             member_group.merge!(members_count)
-            
+
             if member_group['owning_user_id'] == id
                 result_groups_owner << member_group
             else
@@ -241,6 +250,39 @@ post("/groups/:id/join") do
     
     redirect("groups/#{group_id}")
 
+end
+
+post("/groups/:id/member_request/:member/update") do
+    group_id = params[:id].to_i
+    member_id = params[:member].to_i
+
+    db = SQLite3::Database.new("db/slpws23.db")
+    db.execute("UPDATE group_user_rel SET member = 1 WHERE group_id = ? AND user_id = ?", group_id, member_id)
+    
+    redirect("groups/#{group_id}")
+end
+
+post("/groups/:id/member_request/:member/delete") do
+    group_id = params[:id].to_i
+    member_id = params[:member].to_i
+
+    db = SQLite3::Database.new("db/slpws23.db")
+    db.execute("DELETE FROM group_user_rel WHERE group_id = ? AND user_id = ?", group_id, member_id)
+    
+    redirect("groups/#{group_id}")
+end
+
+post("/groups/:id/member/delete") do
+    group_id = params[:id].to_i
+    user_id = session[:user_id]
+
+    db = SQLite3::Database.new("db/slpws23.db")
+    #commments on others posts
+    #comments on posts
+    #posts
+    db.execute("DELETE FROM group_user_rel WHERE group_id = ? AND user_id = ?", group_id, user_id)
+    
+    redirect("groups/#{group_id}")
 end
 
 get("/users/:id") do

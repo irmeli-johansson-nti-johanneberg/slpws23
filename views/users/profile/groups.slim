@@ -32,11 +32,11 @@ hr
 
     p Gruppen är #{group['group_mode']}
 
-    
-    form action="/groups/#{group['group_id']}/leave" method="post"
-        -if group['member'] == 1
+    -if group['member'] == 1
+        form action="/groups/#{group['group_id']}/member/delete" method="post"
             input type="submit" value="Lämna grupp"
-        -if group['member'] == 0
+    -if group['member'] == 0
+        form action="/groups/#{group['group_id']}/member_request/#{user['user_id']}/delete" 
             input type="submit" value="Förfrågan skickad"
 
     hr
