@@ -1,5 +1,7 @@
 h2 #{group['group_name']}
-
+- if session[:user_id] == group['owning_user_id']
+    form action="/groups/#{group['group_id']}/delete" method="post"
+        input type="submit" value="Radera"
 h4
     a href="/users/#{group['owning_user_id']}" #{group['user_name']}
 

@@ -46,7 +46,7 @@ post('/groups') do
             db.execute("INSERT INTO groups (owning_user_id, group_name, group_description, section_id, group_date, group_mode) VALUES (?, ?, ?, ?, ?, ?)", user_id, new_group_name, new_group_description, section_id, new_group_date, new_group_mode)
             group_id = db.execute("SELECT group_id FROM groups WHERE group_name = ?", new_group_name).first.first.to_i
 
-            db.execute("INSERT INTO group_user_rel (group_id, user_id, member) VALUES (?, ?, ?)", group_id, user_id, true)
+            db.execute("INSERT INTO group_user_rel (group_id, user_id, member) VALUES (?, ?, ?)", group_id, user_id, 1)
 
             new_group_tags.each do |group_tag|
                 tag_exist = db.execute("SELECT COUNT(tag_name) FROM tags WHERE tag_name = ?", group_tag).first.first.to_i
@@ -294,6 +294,13 @@ get("/users/:id") do
     result_comments = db.execute("SELECT comments.*, posts.post_id, posts.post_name FROM comments INNER JOIN posts ON comments.post_id = posts.post_id WHERE comments.owning_user_id = ?", user_id)
 
     slim(:"users/show", locals:{user:result_user, posts:result_posts, comments:result_comments})
+end
+
+post("/groups/:id/delete") do
+    id = params[:id].to_i
+    db = SQLite3::Database.new("db/slpws23.db")
+    db.execute("DELETE FROM groups WHERE group_id = ?", id)
+    redirect("/groups/")
 end
 
 post("/posts/:id/delete") do
