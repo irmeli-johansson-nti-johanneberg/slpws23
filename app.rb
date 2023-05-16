@@ -7,6 +7,7 @@ require 'date'
 
 enable :sessions
 
+
 def connect_to_db
     db = SQLite3::Database.new("db/slpws23.db")
     db.results_as_hash = true
@@ -296,9 +297,24 @@ get("/users/:id") do
     slim(:"users/show", locals:{user:result_user, posts:result_posts, comments:result_comments})
 end
 
+post("/groups/:id/delete_n") do
+    id = params[:id].to_i
+    db = SQLite3::Database.new("db/slpws23.db")
+    post_ids = db.execute("SELECT post_id from posts WHERE group_id = ?", id)
+    p post_ids
+    post_ids.each do |post_id|
+        p db.execute("DELETE FROM comments WHERE post_id = ?", post_id)
+    end
+    p db.execute("DELETE FROM posts WHERE group_id = ?", id)
+    p db.execute("DELETE FROM group_user_rel WHERE group_id = ?", id)
+    p db.execute("DELETE FROM groups WHERE group_id = ?", id)
+    redirect("/groups/")
+end
+
 post("/groups/:id/delete") do
     id = params[:id].to_i
     db = SQLite3::Database.new("db/slpws23.db")
+    db.execute("PRAGMA foreign_keys = ON")
     db.execute("DELETE FROM groups WHERE group_id = ?", id)
     redirect("/groups/")
 end
